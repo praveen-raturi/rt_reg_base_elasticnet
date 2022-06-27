@@ -17,7 +17,7 @@ from algorithm.model_server import ModelServer
 prefix = '/opt/ml_vol/'
 data_schema_path = os.path.join(prefix, 'inputs', 'data_config')
 model_path = os.path.join(prefix, 'model', 'artifacts')
-failure_path = os.path.join(prefix, 'outputs', 'failure')
+failure_path = os.path.join(prefix, 'outputs', 'errors', 'serve_failure')
 
 
 # get data schema - its needed to set the prediction field name  
@@ -66,6 +66,13 @@ def infer():
     # Do the prediction
     try: 
         predictions = model_server.predict(data, data_schema)
+        # Convert from dataframe to CSV
+        out = io.StringIO()
+        predictions.to_csv(out, index=False)
+        result = out.getvalue()
+
+        return flask.Response(response=result, status=200, mimetype="text/csv")
+
     except Exception as err:
         # Write out an error file. This will be returned as the failureReason to the client.
         trc = traceback.format_exc()
@@ -80,10 +87,4 @@ def infer():
             status=400, mimetype="text/plain"
         )
 
-    # Convert from dataframe to CSV
-    out = io.StringIO()
-    predictions.to_csv(out, index=False)
-    result = out.getvalue()
-
-    return flask.Response(response=result, status=200, mimetype="text/csv")
-
+    

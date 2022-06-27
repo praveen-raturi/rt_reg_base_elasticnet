@@ -51,11 +51,10 @@ class ModelServer:
         # inverse transform the predictions to original scale
         preds = pipeline.get_inverse_transform_on_preds(preprocessor, model_cfg, preds)        
         # get the names for the id and prediction fields
-        id_field_name = data_schema["inputDatasets"]["regressionBaseMainInput"]["idField"]   
-        pred_field_name = data_schema["outputDatasets"]["regressionBaseMainOutput"]["predictionFieldName"]   
+        id_field_name = data_schema["inputDatasets"]["regressionBaseMainInput"]["idField"]     
         # return te prediction df with the id and prediction fields
         preds_df = data[[id_field_name]].copy()
-        preds_df[pred_field_name] = preds   
+        preds_df['prediction'] = preds   
         
         return preds_df
         

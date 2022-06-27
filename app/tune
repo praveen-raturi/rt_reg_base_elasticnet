@@ -17,7 +17,7 @@ data_schema_path = os.path.join(prefix, 'inputs', 'data_config')
 model_path = os.path.join(prefix, 'model', 'artifacts')
 hyper_param_path = os.path.join(prefix, 'model', 'model_config')
 hpt_results_path = os.path.join(prefix, 'hpt', 'results')
-failure_path = os.path.join(prefix, 'outputs', 'failure')
+failure_path = os.path.join(prefix, 'outputs', 'tune_failure')
 output_path = os.path.join(prefix, 'outputs')
 
 channel_name='training'
@@ -33,7 +33,8 @@ def tune(num_trials=10):
         # read data config
         data_schema = utils.get_data_schema(data_schema_path)
         # run hyper-parameter tuning. This saves results in each trial, so nothing is returned
-        model_tuner.tune_hyperparameters(train_data, data_schema, num_trials, hyper_param_path, hpt_results_path)
+        model_tuner.tune_hyperparameters(train_data, data_schema, num_trials, 
+                                         hyper_param_path, hpt_results_path)
         
         
     except Exception as e:

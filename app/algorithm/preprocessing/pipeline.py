@@ -58,6 +58,18 @@ def get_preprocess_pipeline(pp_params, model_cfg):
     
     pipe_steps = []
     
+    # ===== ADD TARGET FEATURE COLUMN IF NOT PRESENT (THIS CAN HAPPEN FOR TEST ATA)   =====
+    # feature engine doesnt like it if a column is missing, even if it is not needed for a given transformation. 
+    pipe_steps.append(
+        (
+            pp_step_names["TARGET_FEATURE_ADDER"],
+            preprocessors.TargetFeatureAdder(
+                label_field_name=pp_params['target_attr_name']
+                ),
+        )
+    )    
+    
+    
     # ===== KEEP ONLY COLUMNS WE USE   =====
     pipe_steps.append(
         (

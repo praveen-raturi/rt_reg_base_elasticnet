@@ -79,3 +79,8 @@ def print_json(result):
         sort_keys=True,
         indent=4, separators=(',', ': ')
     ))
+    
+
+def save_dataframe(df, save_path, file_name): 
+    df.to_csv(os.path.join(save_path, file_name), index=False)
+    

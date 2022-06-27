@@ -1,1 +1,7 @@
-local_test/
+local_test/ml_vol/
+**/artifacts
+ml_vol/outputs/
+
+docker-compose.yaml
+build_and_push.sh
+venv/

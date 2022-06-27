@@ -57,6 +57,7 @@ class ElasticNet():
         output_ = Dense(1, activity_regularizer=reg )(x)
 
         model = Model(input_, output_)
+        # model.summary() 
         return model
     
     
@@ -70,7 +71,7 @@ class ElasticNet():
             early_stop_loss = 'loss'
             validation_data = None               
         
-        early_stop_callback = EarlyStopping(monitor=early_stop_loss, min_delta = 1e-3, patience=3)      
+        early_stop_callback = EarlyStopping(monitor=early_stop_loss, min_delta = 1e-3, patience=5)      
         infcost_stop_callback = InfCostStopCallback()
     
         history = self.model.fit(

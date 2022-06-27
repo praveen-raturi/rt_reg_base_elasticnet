@@ -49,7 +49,7 @@ class StringTypeCaster(TypeCaster):
 
 
 class FloatTypeCaster(TypeCaster):  
-    ''' Casts categorical features as object type if they are not already so.
+    ''' Casts float features as object type if they are not already so.
     This is needed when some categorical features have values that can inferred as numerical.
     This causes an error when doing categorical feature engineering. 
     '''
@@ -239,7 +239,22 @@ class MinMaxBounder(BaseEstimator, TransformerMixin):
    
         return bounded_data.values
     
+
+
+class TargetFeatureAdder(BaseEstimator, TransformerMixin): 
+    def __init__(self, label_field_name) -> None:
+        super().__init__()
+        self.label_field_name = label_field_name
     
+    def fit(self, data): return self
+    
+    def transform(self, data): 
+        if self.label_field_name not in data.columns: 
+            data[self.label_field_name] = 0.
+        return data
+
+
+
 class XYSplitter(BaseEstimator, TransformerMixin): 
     def __init__(self, target_col, id_col):
         self.target_col = target_col
