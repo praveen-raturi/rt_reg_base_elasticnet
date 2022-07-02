@@ -227,7 +227,19 @@ def get_preprocess_pipeline(pp_params, model_cfg):
                     variables=pp_params["num_vars"] 
                 ),    
             )
-        )   
+        )  
+        
+        # Clip values to +/- 4 std devs
+        pipe_steps.append(
+            (
+                pp_step_names["VALUE_CLIPPER"], 
+                preprocessors.ValueClipper(
+                    fields_to_clip=pp_params["num_vars"],
+                    min_val=-4.0,   # - 4 std dev
+                    max_val=4.0,    # + 4 std dev    
+                ),    
+            )
+        )    
         
     
     # ===============================================================
@@ -270,7 +282,19 @@ def get_preprocess_pipeline(pp_params, model_cfg):
                 cols_list=[pp_params["target_attr_name"]]
             )
         )
-    )     
+    )   
+    
+    # Clip values to +/- 4 std devs
+    pipe_steps.append(
+        (
+            pp_step_names["TARGET_VALUE_CLIPPER"], 
+            preprocessors.ValueClipper(
+                fields_to_clip=[pp_params["target_attr_name"]],
+                min_val=-4.0,   # - 4 std dev
+                max_val=4.0,    # + 4 std dev    
+            ),    
+        )
+    )       
     
     
     # ===============================================================

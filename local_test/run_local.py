@@ -1,6 +1,7 @@
 import os, shutil
+import time
 import sys
-import pandas as pd
+import pandas as pd, numpy as np
 import pprint
 from skopt.space import Real, Categorical, Integer
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
@@ -36,14 +37,10 @@ this script is useful for doing the algorithm testing locally without needing
 to build the docker image and run the container.
 make sure you create your virtual environment, install the dependencies
 from requirements.txt file, and then use that virtual env to do your testing. 
-This isnt foolproof. You can still have host os or python-version related issues, so beware. 
+This isnt foolproof. You can still have host os-related issues, so beware. 
 '''
 
-dataset_name = "abalone"; id_col = "Id"; target_col = "Rings";
-# dataset_name = "auto_prices"; id_col = "id"; target_col = "price";
-# dataset_name = "computer_activity"; id_col = "id"; target_col = "usr";
-# dataset_name = "heart_disease"; id_col = "Id"; target_col = "num";
-# dataset_name = "white_wine"; id_col = "id"; target_col = "quality";
+model_name = "elasticnet"
 
 
 def create_ml_vol():    
@@ -83,8 +80,7 @@ def create_ml_vol():
     create_dir("", dir_tree)
 
 
-
-def copy_example_files():     
+def copy_example_files(dataset_name):     
     # data schema
     shutil.copyfile(f"./examples/{dataset_name}_schema.json", os.path.join(data_schema_path, f"{dataset_name}_schema.json"))
     # train data    
@@ -95,14 +91,13 @@ def copy_example_files():
     shutil.copyfile("./examples/hyperparameters.json", os.path.join(hyper_param_path, "hyperparameters.json"))
 
 
-def run_HPT(): 
+def run_HPT(num_hpt_trials): 
     # Read data
     train_data = utils.get_data(train_data_path)    
     # read data config
     data_schema = utils.get_data_schema(data_schema_path)  
     # run hyper-parameter tuning. This saves results in each trial, so nothing is returned
-    num_trials = 20
-    model_tuner.tune_hyperparameters(train_data, data_schema, num_trials, hyper_param_path, hpt_results_path)
+    model_tuner.tune_hyperparameters(train_data, data_schema, num_hpt_trials, hyper_param_path, hpt_results_path)
 
 
 def train_and_save_algo():        
@@ -115,11 +110,11 @@ def train_and_save_algo():
     # get trained preprocessor, model, training history 
     preprocessor, model, history = model_trainer.get_trained_model(train_data, data_schema, hyper_parameters)            
     # Save the processing pipeline   
-    pipeline.save_preprocessor(preprocessor, model_artifacts_path)
+    pipeline.save_preprocessor(preprocessor, model_path)
     # Save the model 
-    elasticnet.save_model(model, model_artifacts_path)
+    elasticnet.save_model(model, model_path)
     # Save training history
-    elasticnet.save_training_history(history, model_artifacts_path)    
+    elasticnet.save_training_history(history, model_path)    
     print("done with training")
 
 
@@ -129,28 +124,92 @@ def load_and_test_algo():
     # read data config
     data_schema = utils.get_data_schema(data_schema_path)    
     # instantiate the trained model 
-    predictor = model_server.ModelServer(model_artifacts_path)
+    predictor = model_server.ModelServer(model_path)
     # make predictions
     predictions = predictor.predict(test_data, data_schema)
     # save predictions
     predictions.to_csv(os.path.join(testing_outputs_path, "test_predictions.csv"), index=False)
     # score the results
-    score(test_data, predictions)  
+    results = score(test_data, predictions)  
     print("done with predictions")
+    return results
 
 
-def score(test_data, predictions): 
+def set_id_and_target_cols(dataset_name):
+    global id_col, target_col 
+    if dataset_name == "abalone": 
+        id_col = "Id"; target_col = "Rings"
+    elif dataset_name == "auto_prices": 
+        id_col = "id"; target_col = "price"
+    elif dataset_name == "computer_activity": 
+        id_col = "id"; target_col = "usr"
+    elif dataset_name == "heart_disease": 
+        id_col = "Id"; target_col = "num"
+    elif dataset_name == "white_wine": 
+        id_col = "id"; target_col = "quality"
+    elif dataset_name == "ailerons": 
+        id_col = "id"; target_col = "goal"
+    else: raise Exception(f"Error: Cannot find dataset = {dataset_name}")
+    
+
+def score(test_data, predictions):     
     predictions = predictions.merge(test_data[[id_col, target_col]], on=id_col)
     rmse = mean_squared_error(predictions[target_col], predictions['prediction'], squared=False)
     r2 = r2_score(predictions[target_col], predictions['prediction'])
-    print(f"rmse: {rmse},  r2: {r2}") 
+    results = {"rmse": np.round(rmse,4), "r2": np.round(r2,4) }
+    return results
 
 
+def save_test_outputs(results, run_hpt):
+    fname = f"{model_name}_results_with_hpt.csv" if run_hpt else f"{model_name}_results_no_hpt.csv"
+    df = pd.DataFrame(results)
+    df = df[["model", "dataset_name", "run_hpt", "num_hpt_trials", "rmse", "r2", "elapsed_time_in_minutes"]]
+    print(df)
+    test_results_path = "test_results"
+    if not os.path.exists(test_results_path): os.mkdir(test_results_path)
+    df.to_csv(os.path.join(test_results_path, fname), index=False)
+
+
+def run_train_and_test(dataset_name, run_hpt, num_hpt_trials):
+    start = time.time()
+    
+    create_ml_vol()   # create the directory which imitates the bind mount on container
+    copy_example_files(dataset_name)   # copy the required files for model training    
+    if run_hpt: run_HPT(num_hpt_trials)               # run HPT and save tuned hyperparameters
+    train_and_save_algo()        # train the model and save
+    
+    set_id_and_target_cols(dataset_name=dataset_name)
+    results = load_and_test_algo()        # load the trained model and get predictions on test data
+    
+    end = time.time()
+    elapsed_time_in_minutes = np.round((end - start)/60.0, 2)
+    
+    results = { **results, 
+               "model": model_name, 
+               "dataset_name": dataset_name, 
+               "run_hpt": run_hpt, 
+               "num_hpt_trials": num_hpt_trials if run_hpt else None, 
+               "elapsed_time_in_minutes": elapsed_time_in_minutes 
+               }
+    
+    return results
+    
+    
 
 if __name__ == "__main__": 
-    # create_ml_vol()   # create the directory which imitates the bind mount on container
-    # copy_example_files()   # copy the required files for model training    
-    # run_HPT()               # run HPT and save tuned hyperparameters
-    # train_and_save_algo()        # train the model and save
-    load_and_test_algo()        # load the trained model and get predictions on test data
-     
+
+    run_hpt = False
+    num_hpt_trials = 20    
+    
+    # datasets = ["abalone"]
+    datasets = ["abalone", "auto_prices", "computer_activity", "heart_disease", "white_wine", "ailerons"]
+    
+    all_results = []
+    for dataset_name in datasets:        
+        print("-"*60)
+        print(f"Running dataset {dataset_name}")
+        results = run_train_and_test(dataset_name, run_hpt, num_hpt_trials)
+        all_results.append(results)
+        print("-"*60)
+    
+    save_test_outputs(all_results, run_hpt)

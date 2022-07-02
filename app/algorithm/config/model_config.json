@@ -42,6 +42,8 @@
       "STANDARD_SCALER_TARGET": "standard_scaler_target",
       "ONE_HOT_ENCODER": "one_hot_encoder",
       "FEATURE_DROPPER": "feature_dropper",
+      "VALUE_CLIPPER": "value_clipper",
+      "TARGET_VALUE_CLIPPER": "target_value_clipper",
       "TARGET_FEATURE_ADDER": "target_feature_adder",
       "XYSPLITTER": "xysplitter"
     }

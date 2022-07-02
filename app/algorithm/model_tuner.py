@@ -117,7 +117,7 @@ def tune_hyperparameters(data, data_schema, num_trials, hyper_param_path, hpt_re
         # train model
         model, _ = model_trainer.train_model(train_X, train_y, valid_X, valid_y, hyperparameters) 
         # evaluate the model
-        score = model.evaluate(valid_X, valid_y)
+        score = model.evaluate(valid_X, valid_y)  # returns rmse
         # Our optimizing metric is the model loss fn
         opt_metric = score[0]   
         if np.isnan(opt_metric): opt_metric = 1.0e5     # sometimes loss becomes inf, so use a large value
