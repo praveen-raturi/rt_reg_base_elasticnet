@@ -1,0 +1,2 @@
+model,dataset_name,run_hpt,num_hpt_trials,rmse,r2,elapsed_time_in_minutes
+elasticnet,auto_prices,False,,4977.3722,0.6284,0.01
