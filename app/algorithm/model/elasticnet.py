@@ -35,7 +35,6 @@ class InfCostStopCallback(Callback):
 class ElasticNet(): 
     
     def __init__(self, M, l1_reg=1e-3, l2_reg=1e-3, lr = 1e-2, **kwargs) -> None:
-        super(ElasticNet, self).__init__(**kwargs)
         self.M = M #number of neurons
         self.l1_reg = np.float(l1_reg)
         self.l2_reg = np.float(l2_reg)
