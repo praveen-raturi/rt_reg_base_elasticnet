@@ -3,7 +3,7 @@ import os
 
 import algorithm.utils as utils
 import algorithm.preprocessing.pipeline as pipeline
-import algorithm.model.elasticnet as elasticnet
+import algorithm.model.regressor as regressor
 
 
 # get model configuration parameters 
@@ -26,7 +26,7 @@ class ModelServer:
     
     def _get_model(self): 
         try: 
-            self.model = elasticnet.load_model(self.model_path)
+            self.model = regressor.load_model(self.model_path)
             return self.model
         except: 
             print(f'No model found to load from {self.model_path}. Did you train the model first?')

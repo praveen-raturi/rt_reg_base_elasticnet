@@ -11,7 +11,7 @@ import algorithm.model_trainer as model_trainer
 import algorithm.model_server as model_server
 import algorithm.model_tuner as model_tuner
 import algorithm.preprocessing.pipeline as pipeline
-import algorithm.model.elasticnet as elasticnet
+import algorithm.model.regressor as regressor
 
 
 inputs_path = "./ml_vol/inputs/"
@@ -42,7 +42,7 @@ from requirements.txt file, and then use that virtual env to do your testing.
 This isnt foolproof. You can still have host os or python version-related issues, so beware.
 '''
 
-model_name= elasticnet.MODEL_NAME
+model_name= regressor.MODEL_NAME
 
 
 def create_ml_vol():    
@@ -114,9 +114,9 @@ def train_and_save_algo():
     # Save the processing pipeline   
     pipeline.save_preprocessor(preprocessor, model_artifacts_path)
     # Save the model 
-    elasticnet.save_model(model, model_artifacts_path)
+    regressor.save_model(model, model_artifacts_path)
     # Save training history
-    elasticnet.save_training_history(history, model_artifacts_path)    
+    regressor.save_training_history(history, model_artifacts_path)    
     print("done with training")
 
 
@@ -189,7 +189,7 @@ def run_train_and_test(dataset_name, run_hpt, num_hpt_trials):
     set_id_and_target_cols(dataset_name=dataset_name)
     results = load_and_test_algo()        # load the trained model and get predictions on test data
     
-    end = time.time()
+    end = time.time() 
     elapsed_time_in_minutes = np.round((end - start)/60.0, 2)
     
     results = { **results, 
@@ -211,7 +211,7 @@ if __name__ == "__main__":
     run_hpt_list = [False]
     
     datasets = ["abalone", "auto_prices", "computer_activity", "heart_disease", "white_wine", "ailerons"]
-    # datasets = ["heart_disease"]
+    datasets = ["heart_disease"]
     
     for run_hpt in run_hpt_list:
         all_results = []

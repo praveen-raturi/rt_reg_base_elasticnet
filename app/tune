@@ -12,13 +12,16 @@ import algorithm.model_tuner as model_tuner
 
 # These are the paths to where SageMaker mounts interesting things in your container.
 prefix = '/opt/ml_vol/'
+
 data_path = os.path.join(prefix, 'inputs', 'data')
 data_schema_path = os.path.join(prefix, 'inputs', 'data_config')
+
 model_path = os.path.join(prefix, 'model', 'artifacts')
 hyper_param_path = os.path.join(prefix, 'model', 'model_config')
-hpt_results_path = os.path.join(prefix, 'hpt', 'results')
-failure_path = os.path.join(prefix, 'outputs', 'tune_failure')
+
 output_path = os.path.join(prefix, 'outputs')
+hpt_results_path = os.path.join(output_path, 'hpt_outputs')
+failure_path = os.path.join(output_path, 'errors', 'tune_failure')
 
 channel_name='training'
 training_path = os.path.join(data_path, channel_name, "regressionBaseMainInput")

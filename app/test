@@ -12,12 +12,15 @@ import algorithm.model_server as model_server
 
 # These are the paths to where SageMaker mounts interesting things in your container.
 prefix = '/opt/ml_vol/'
+
 data_path = os.path.join(prefix, 'inputs', 'data')
 data_schema_path = os.path.join(prefix, 'inputs', 'data_config')
+
 model_path = os.path.join(prefix, 'model', 'artifacts')
+
 output_path = os.path.join(prefix, 'outputs')
 testing_outputs_path = os.path.join(output_path, 'testing_outputs')
-failure_path = os.path.join(output_path, 'test_failure')
+failure_path = os.path.join(output_path, 'errors', 'test_failure')
 
 test_pred_file_name = "test_predictions.csv"
 

@@ -10,7 +10,7 @@ warnings.filterwarnings('ignore')
 import algorithm.utils as utils
 import algorithm.model_trainer as model_trainer
 import algorithm.preprocessing.pipeline as pipeline
-import algorithm.model.elasticnet as elasticnet
+import algorithm.model.regressor as regressor
 
 # These are the paths to where SageMaker mounts interesting things in your container.
 prefix = '/opt/ml_vol/'
@@ -18,8 +18,8 @@ data_path = os.path.join(prefix, 'inputs', 'data')
 data_schema_path = os.path.join(prefix, 'inputs', 'data_config')
 model_path = os.path.join(prefix, 'model', 'artifacts')
 hyper_param_path = os.path.join(prefix, 'model', 'model_config')
-failure_path = os.path.join(prefix, 'outputs', 'train_failure')
 output_path = os.path.join(prefix, 'outputs')
+failure_path = os.path.join(output_path, 'errors', 'train_failure')
 
 
 # This algorithm has a single channel of input data called 'training'. Since we run in
@@ -43,9 +43,9 @@ def train():
         # Save the processing pipeline   
         pipeline.save_preprocessor(preprocessor, model_path)
         # Save the model 
-        elasticnet.save_model(model, model_path)
+        regressor.save_model(model, model_path)
         # Persist the history so end users can graph loss 
-        elasticnet.save_training_history(history, model_path)        
+        regressor.save_training_history(history, model_path)        
         print('Done training.')
     except Exception as e:
         print("error!")

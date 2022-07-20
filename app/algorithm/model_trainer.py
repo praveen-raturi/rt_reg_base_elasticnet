@@ -12,7 +12,7 @@ import algorithm.preprocessing.pipeline as pp_pipe
 import algorithm.preprocessing.preprocess_utils as pp_utils
 import algorithm.utils as utils
 # import algorithm.scoring as scoring
-from algorithm.model.elasticnet import ElasticNet, get_data_based_model_params
+from algorithm.model.regressor import Regressor, get_data_based_model_params
 from algorithm.utils import get_model_config
 
 
@@ -47,7 +47,7 @@ def train_model(train_X, train_y, valid_X, valid_y, hyper_params):
     model_params = { **data_based_params, **hyper_params }
     
     # Create and train model   
-    model = ElasticNet(  **model_params )  
+    model = Regressor(  **model_params )  
     # model.summary()  
     history = model.fit(
         train_X=train_X, train_y=train_y, 

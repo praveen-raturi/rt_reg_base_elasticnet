@@ -32,7 +32,7 @@ class InfCostStopCallback(Callback):
             self.model.stop_training = True
 
 
-class ElasticNet(): 
+class Regressor(): 
     
     def __init__(self, M, l1_reg=1e-3, l2_reg=1e-3, lr = 1e-2, **kwargs) -> None:
         self.M = M #number of neurons
@@ -127,7 +127,7 @@ def save_model(model, model_path):
 
 def load_model(model_path): 
     try: 
-        model = ElasticNet.load(model_path)        
+        model = Regressor.load(model_path)        
     except: 
         raise Exception(f'''Error loading the trained {MODEL_NAME} model. 
             Do you have the right trained model in path: {model_path}?''')
