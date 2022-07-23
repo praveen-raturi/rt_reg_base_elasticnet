@@ -8,7 +8,7 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 RUN ls
-COPY ./requirements.txt .
+ADD ./requirements.txt .
 RUN pip3 install -r requirements.txt 
 
 
